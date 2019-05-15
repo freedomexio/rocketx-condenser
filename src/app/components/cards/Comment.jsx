@@ -350,7 +350,7 @@ class CommentImpl extends React.Component {
                     </Link>
                 );
             } else {
-                replies = comment.replies;
+                replies = comment.replies.filter(c => cont.get(c));
                 sortComments(cont, replies, this.props.sort_order);
                 // When a comment has hidden replies and is collapsed, the reply count is off
                 //console.log("replies:", replies.length, "num_visible:", replies.filter( reply => !cont.get(reply).getIn(['stats', 'hide'])).length)
@@ -430,7 +430,6 @@ class CommentImpl extends React.Component {
                     </div>
                     <div className="Comment__header">
                         <div className="Comment__header_collapse">
-                            <Voting post={post} flag />
                             <a
                                 title={tt('g.collapse_or_expand')}
                                 onClick={this.toggleCollapsed}

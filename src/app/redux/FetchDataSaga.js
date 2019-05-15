@@ -15,6 +15,7 @@ import * as appActions from './AppReducer';
 import constants from './constants';
 import { fromJS, Map, Set } from 'immutable';
 import { getStateAsync } from 'app/utils/steemApi';
+import { SCOT_TAG } from 'app/client_config';
 
 const REQUEST_DATA = 'fetchDataSaga/REQUEST_DATA';
 const GET_CONTENT = 'fetchDataSaga/GET_CONTENT';
@@ -76,6 +77,20 @@ export function* fetchState(location_change_action) {
     try {
         let state = yield call(getStateAsync, url);
         if (state.content) {
+            state.content = Object.fromEntries(
+                Object.entries(state.content).filter(entry => {
+                    try {
+                        const jsonMetadata = JSON.parse(entry[1].json_metadata);
+                        return (
+                            jsonMetadata.tags &&
+                            jsonMetadata.tags.find(t => t === SCOT_TAG)
+                        );
+                    } catch (e) {
+                        console.error(e);
+                    }
+                    return false;
+                })
+            );
             const allScotData = yield all(
                 Object.entries(state.content)
                     .filter(entry => {
@@ -259,8 +274,12 @@ export function* fetchData(action) {
         let fetchDone = false;
         let batch = 0;
         while (!fetchDone) {
-            const data = yield call([api, api[call_name]], ...args);
+            let data = yield call([api, api[call_name]], ...args);
 
+            data = data.filter(post => {
+                const jsonMetadata = JSON.parse(post.json_metadata);
+                return jsonMetadata.tags.find(t => t === SCOT_TAG);
+            });
             endOfData = data.length < constants.FETCH_DATA_BATCH_SIZE;
 
             batch++;

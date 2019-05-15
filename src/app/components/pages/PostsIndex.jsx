@@ -8,6 +8,7 @@ import { List } from 'immutable';
 import { actions as fetchDataSagaActions } from 'app/redux/FetchDataSaga';
 import constants from 'app/redux/constants';
 import shouldComponentUpdate from 'app/utils/shouldComponentUpdate';
+import { TAG_LIST } from 'app/client_config';
 import PostsList from 'app/components/cards/PostsList';
 import { isFetchingOrRecentlyUpdated } from 'app/utils/StateFunctions';
 import Callout from 'app/components/elements/Callout';
@@ -17,6 +18,7 @@ import SidebarNewUsers from 'app/components/elements/SidebarNewUsers';
 import Notices from 'app/components/elements/Notices';
 import SteemMarket from 'app/components/elements/SteemMarket';
 import GptAd from 'app/components/elements/GptAd';
+import BiddingAd from 'app/components/elements/BiddingAd';
 import ArticleLayoutSelector from 'app/components/modules/ArticleLayoutSelector';
 import Topics from './Topics';
 import SortOrder from 'app/components/elements/SortOrder';
@@ -251,22 +253,19 @@ class PostsIndex extends React.Component {
 
                 <aside className="c-sidebar c-sidebar--right">
                     {this.props.isBrowser &&
-                    !this.props.maybeLoggedIn &&
-                    !this.props.username ? (
-                        <SidebarNewUsers />
-                    ) : (
-                        this.props.isBrowser && (
+                        !this.props.maybeLoggedIn &&
+                        this.props.username &&
+                        (this.props.isBrowser && (
                             <div>
                                 {/* <SidebarStats steemPower={123} followers={23} reputation={62} />  */}
                                 <SidebarLinks username={this.props.username} />
                             </div>
-                        )
-                    )}
+                        ))}
                     <Notices notices={this.props.notices} />
                     <SteemMarket />
-                    {this.props.gptSlots ? (
+                    {this.props.gptEnabled ? (
                         <div className="sidebar-ad">
-                            <GptAd slotName="right_nav" />
+                            <GptAd type="Basic" slotName="right_nav" />
                         </div>
                     ) : null}
                 </aside>
@@ -290,9 +289,21 @@ class PostsIndex extends React.Component {
                         </a>
                         {' ' + tt('g.next_3_strings_together.value_posts')}
                     </small>
-                    {this.props.gptSlots ? (
-                        <div className="sidebar-ad">
-                            <GptAd slotName="left_nav" />
+                    {this.props.gptEnabled ? (
+                        <div>
+                            <div className="sidebar-ad">
+                                <GptAd type="Basic" slotName="left_nav" />
+                            </div>
+                            <div
+                                className="sidebar-ad"
+                                style={{ marginTop: 20 }}
+                            >
+                                <BiddingAd
+                                    type="Bidding"
+                                    slotName="left_nav_2"
+                                    id="div-gpt-ad-1554687231046-0"
+                                />
+                            </div>
                         </div>
                     ) : null}
                 </aside>
@@ -316,9 +327,7 @@ module.exports = {
                 blogmode: state.app.getIn(['user_preferences', 'blogmode']),
                 sortOrder: ownProps.params.order,
                 topic: ownProps.params.category,
-                categories: state.global
-                    .getIn(['tag_idx', 'trending'])
-                    .take(50),
+                categories: TAG_LIST,
                 pinned: state.offchain.get('pinned_posts'),
                 maybeLoggedIn: state.user.get('maybeLoggedIn'),
                 isBrowser: process.env.BROWSER,
@@ -326,7 +335,7 @@ module.exports = {
                     .get('pinned_posts')
                     .get('notices')
                     .toJS(),
-                gptSlots: state.app.getIn(['googleAds', 'gptSlots']).toJS(),
+                gptEnabled: state.app.getIn(['googleAds', 'gptEnabled']),
             };
         },
         dispatch => {
