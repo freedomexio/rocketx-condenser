@@ -1,5 +1,5 @@
 
-# Condenser
+# RocketX-Condenser
 
 
 Condenser is the react.js web interface to the world's first and best
