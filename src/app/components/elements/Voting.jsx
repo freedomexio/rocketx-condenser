@@ -26,17 +26,14 @@ import Dropdown from 'app/components/elements/Dropdown';
 const ABOUT_FLAG = (
     <div>
         <p>
-            {tt(
-                'voting_jsx.flagging_post_can_remove_rewards_the_flag_should_be_used_for_the_following'
-            )}
+            Downvoting a post can decrease pending rewards and make it less
+            visible. Common reasons:
         </p>
         <ul>
-            <li>{tt('voting_jsx.disagreement_on_rewards')}</li>
-            <li>{tt('voting_jsx.fraud_or_plagiarism')}</li>
-            <li>{tt('voting_jsx.hate_speech_or_internet_trolling')}</li>
-            <li>
-                {tt('voting_jsx.intentional_miss_categorized_content_or_spam')}
-            </li>
+            <li>Disagreement on rewards</li>
+            <li>Fraud or plagiarism</li>
+            <li>Hate speech or trolling</li>
+            <li>Miscategorized content or spam</li>
         </ul>
     </div>
 );
@@ -50,7 +47,6 @@ class Voting extends React.Component {
     static propTypes = {
         // HTML properties
         post: PropTypes.string.isRequired,
-        flag: PropTypes.bool,
         showList: PropTypes.bool,
 
         // Redux connect properties
@@ -71,7 +67,6 @@ class Voting extends React.Component {
 
     static defaultProps = {
         showList: true,
-        flag: false,
     };
 
     constructor(props) {
@@ -114,7 +109,7 @@ class Voting extends React.Component {
                 weight = up ? MAX_WEIGHT : -MAX_WEIGHT;
             }
 
-            const isFlag = this.props.flag ? true : null;
+            const isFlag = up ? null : true;
             this.props.vote(weight, {
                 author,
                 permlink,
@@ -194,7 +189,10 @@ class Voting extends React.Component {
         };
 
         this.toggleWeightUpOrDown = up => {
-            this.setState({ showWeight: !this.state.showWeight });
+            this.setState({
+                showWeight: !this.state.showWeight,
+                showWeightDir: up ? 'up' : 'down',
+            });
         };
         this.shouldComponentUpdate = shouldComponentUpdate(this, 'Voting');
     }
@@ -225,7 +223,6 @@ class Voting extends React.Component {
             active_votes,
             showList,
             voting,
-            flag,
             enable_slider,
             is_comment,
             post_obj,
@@ -235,8 +232,13 @@ class Voting extends React.Component {
             scotData,
         } = this.props;
 
-        const { votingUp, votingDown, showWeight, myVote } = this.state;
-        if (flag && !username) return null;
+        const {
+            votingUp,
+            votingDown,
+            showWeight,
+            showWeightDir,
+            myVote,
+        } = this.state;
 
         const votingUpActive = voting && votingUp;
         const votingDownActive = voting && votingDown;
@@ -262,14 +264,11 @@ class Voting extends React.Component {
             );
         };
 
-        if (flag) {
+        let downVote;
+        if (true) {
             const down = (
                 <Icon
-                    name={
-                        votingDownActive
-                            ? 'empty'
-                            : myVote < 0 ? 'flag2' : 'flag1'
-                    }
+                    name={votingDownActive ? 'empty' : 'chevron-down-circle'}
                     className="flag"
                 />
             );
@@ -277,14 +276,13 @@ class Voting extends React.Component {
                 'Voting__button Voting__button-down' +
                 (myVote < 0 ? ' Voting__button--downvoted' : '') +
                 (votingDownActive ? ' votingDown' : '');
-            const flagWeight = post_obj.getIn(['stats', 'flagWeight']);
             // myVote === current vote
 
             const invokeFlag = (
                 <span
                     href="#"
                     onClick={this.toggleWeightDown}
-                    title="Flag"
+                    title="Downvote"
                     id="downvote_button"
                     className="flag"
                 >
@@ -296,7 +294,7 @@ class Voting extends React.Component {
                 <a
                     href="#"
                     onClick={this.voteDown}
-                    title="Flag"
+                    title="Downvote"
                     className="flag"
                     id="revoke_downvote_button"
                 >
@@ -306,14 +304,14 @@ class Voting extends React.Component {
 
             const dropdown = (
                 <Dropdown
-                    show={showWeight}
+                    show={showWeight && showWeightDir == 'down'}
                     onHide={() => this.setState({ showWeight: false })}
                     onShow={() => {
                         this.setState({ showWeight: true });
                         this.readSliderWeight();
                     }}
                     title={invokeFlag}
-                    position={'left'}
+                    position={'right'}
                 >
                     <div className="Voting__adjust_weight_down">
                         {(myVote == null || myVote === 0) &&
@@ -327,31 +325,26 @@ class Voting extends React.Component {
                         />
                         <div className="clear Voting__about-flag">
                             {ABOUT_FLAG}
+                            <br />
                             <span
                                 href="#"
                                 onClick={this.voteDown}
                                 className="button outline"
-                                title="Flag"
+                                title="Downvote"
                             >
-                                Flag
+                                Submit
                             </span>
                         </div>
                     </div>
                 </Dropdown>
             );
 
-            const flag =
-                myVote === null || myVote === 0 ? dropdown : revokeFlag;
-            return (
-                <span className="Voting">
-                    <span className={classDown}>
-                        {flagWeight > 0 && (
-                            <span className="Voting__button-downvotes">
-                                {'•'.repeat(flagWeight)}
-                            </span>
-                        )}
-                        {flag}
-                    </span>
+            const flagWeight = post_obj.getIn(['stats', 'flagWeight']);
+            //const flag =
+            //    myVote === null || myVote === 0 ? dropdown : revokeFlag;
+            downVote = (
+                <span className={classDown}>
+                    {myVote === null || myVote === 0 ? dropdown : revokeFlag}
                 </span>
             );
         }
@@ -399,26 +392,35 @@ class Voting extends React.Component {
 
         if (cashout_active) {
             payoutItems.push({ value: 'Pending Payout' });
-            payoutItems.push({ value: `${scot_pending_token} WEED` });
+            payoutItems.push({
+                value: `${scot_pending_token} ${LIQUID_TOKEN_UPPERCASE}`,
+            });
             payoutItems.push({
                 value: <TimeAgoWrapper date={cashout_time} />,
             });
         } else if (scot_total_author_payout) {
             payoutItems.push({
-                value: `Past Token Payouts ${payout} WEED`,
+                value: `Past Token Payouts ${payout} ${LIQUID_TOKEN_UPPERCASE}`,
             });
             payoutItems.push({
-                value: `- Author ${scot_total_author_payout} WEED`,
+                value: `- Author ${scot_total_author_payout} ${
+                    LIQUID_TOKEN_UPPERCASE
+                }`,
             });
             payoutItems.push({
-                value: `- Curator ${scot_total_curator_payout} WEED`,
+                value: `- Curator ${scot_total_curator_payout} ${
+                    LIQUID_TOKEN_UPPERCASE
+                }`,
             });
         }
 
         const payoutEl = (
             <DropdownMenu el="div" items={payoutItems}>
                 <span>
-                    <FormattedAsset amount={payout} asset={'WEED'} />
+                    <FormattedAsset
+                        amount={payout}
+                        asset={LIQUID_TOKEN_UPPERCASE}
+                    />
                     {payoutItems.length > 0 && <Icon name="dropdown-arrow" />}
                 </span>
             </DropdownMenu>
@@ -492,10 +494,13 @@ class Voting extends React.Component {
             // Vote weight adjust
             dropdown = (
                 <Dropdown
-                    show={showWeight}
+                    show={showWeight && showWeightDir == 'up'}
                     onHide={() => this.setState({ showWeight: false })}
                     onShow={() => {
-                        this.setState({ showWeight: true });
+                        this.setState({
+                            showWeight: true,
+                            showWeightDir: 'up',
+                        });
                         this.readSliderWeight();
                     }}
                     title={up}
@@ -536,6 +541,7 @@ class Voting extends React.Component {
                         {voteChevron}
                         {dropdown}
                     </span>
+                    {downVote}
                     {payoutEl}
                 </span>
                 {voters_list}
@@ -549,7 +555,7 @@ export default connect(
     (state, ownProps) => {
         const post = state.global.getIn(['content', ownProps.post]);
         if (!post) return ownProps;
-        const scotData = post.getIn(['scotData', 'WEED']);
+        const scotData = post.getIn(['scotData', LIQUID_TOKEN_UPPERCASE]);
         const author = post.get('author');
         const permlink = post.get('permlink');
         const active_votes = scotData ? scotData.get('active_votes') : List();
@@ -580,7 +586,6 @@ export default connect(
 
         return {
             post: ownProps.post,
-            flag: ownProps.flag,
             showList: ownProps.showList,
             author,
             permlink,
@@ -631,10 +636,7 @@ export default connect(
                         permlink,
                         weight,
                         __config: {
-                            title:
-                                weight < 0
-                                    ? tt('voting_jsx.confirm_flag')
-                                    : null,
+                            title: weight < 0 ? 'Confirm Downvote' : null,
                         },
                     },
                     confirm,
