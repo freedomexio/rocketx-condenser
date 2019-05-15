@@ -2,6 +2,8 @@
 # RocketX-Condenser
 
 
+![](https://i.imgur.com/MxrXqDy.png)
+
 Condenser is the react.js web interface to the world's first and best
 blockchain-based social media platform, RocketX.  It uses
 [STEEM](https://github.com/steemit/steem) and [SteemSmartContracts](https://github.com/harpagon210/steemsmartcontracts), a blockchain powered by DPoS Governance and ChainBase DB to store JSON-based content for a plethora of web
