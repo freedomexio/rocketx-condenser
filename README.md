@@ -3,23 +3,23 @@
 
 
 Condenser is the react.js web interface to the world's first and best
-blockchain-based social media platform, steemit.com.  It uses
-[STEEM](https://github.com/steemit/steem), a blockchain powered by DPoS Governance and ChainBase DB to store JSON-based content for a plethora of web
+blockchain-based social media platform, RocketX.  It uses
+[STEEM](https://github.com/steemit/steem) and [SteemSmartContracts](https://github.com/harpagon210/steemsmartcontracts), a blockchain powered by DPoS Governance and ChainBase DB to store JSON-based content for a plethora of web
 applications.   
 
-## Why would I want to use Condenser (steemit.com front-end)?
+## Why would I want to use Condenser (rocketx.com front-end)?
 
-* Learning how to build blockchain-based web applications using STEEM as a
+* Learning how to build blockchain-based web applications using scot tokens as a
   content storage mechanism in react.js
-* Reviewing the inner workings of the steemit.com social media platform
-* Assisting with software development for steemit.com
+* Reviewing the inner workings of the rocketx.com social media platform
+* Assisting with software development for RocketX
 
 ## Installation
 
 #### Docker
 
 We highly recommend using docker to run condenser in production. This is how we run the
-live steemit.com site and it is the most supported (and fastest) method of
+live RocketX site and it is the most supported (and fastest) method of
 both building and running condenser. We will always have the latest version
 of condenser (master branch) available on Docker Hub. Configuration settings
 can be set using environment variables (see configuration section below for
@@ -35,7 +35,7 @@ docker run -it -p 8080:8080 steemit/condenser
 Environment variables can be added like this:
 
 ```bash
-docker run -it -p 8080:8080 steemit/condenser
+docker run -it -p 8080:8080 freedomexio/rocketx-condenser
 ```
 
 If you would like to modify, build, and run condenser using docker, it's as
@@ -43,7 +43,7 @@ simple as pulling in the github repo and issuing one command to build it,
 like this:
 
 ```bash
-git clone https://github.com/steemit/condenser
+git clone https://github.com/freedomexio/rocketx-condenser
 cd condenser
 docker build -t="myname/condenser:mybranch" .
 docker run -it -p 8080:8080 myname/condenser:mybranch
@@ -55,7 +55,7 @@ docker run -it -p 8080:8080 myname/condenser:mybranch
 #### Clone the repository and make a tmp folder
 
 ```bash
-git clone https://github.com/steemit/condenser
+git clone https://github.com/freedomexio/rocketx-condenser
 cd condenser
 mkdir tmp
 ```
@@ -219,7 +219,7 @@ This will read data from the blobs in `api_mockdata` directory. If you want to u
 
 ### Run blackbox tests using nightwatch
 
-To run a Selenium test suite, start the condenser docker image with a name `condenser` (like `docker run --name condenser -itp 8080:8080 steemit/condenser:latest`) and then run the blackboxtest image attached to the condneser image's network:
+To run a Selenium test suite, start the condenser docker image with a name `condenser` (like `docker run --name condenser -itp 8080:8080 freedomexio/rocketx-condenser:latest`) and then run the blackboxtest image attached to the condneser image's network:
 
 ```
 docker build -t=steemit/condenser-blackboxtest blackboxtest/
@@ -231,6 +231,5 @@ docker run --network container:condenser steemit/condenser-blackboxtest:latest
 
 To report a non-critical issue, please file an issue on this GitHub project.
 
-If you find a security issue please report details to: security@steemit.com
-
+If you find a security issue please report details to: https://github.com/freedomexio/rocketx-condenser/issues
 We will evaluate the risk and make a patch available before filing the issue.
