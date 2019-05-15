@@ -1,13 +1,15 @@
 
-# Condenser
+# RocketX-Condenser
 
+
+![](https://i.imgur.com/MxrXqDy.png)
 
 Condenser is the react.js web interface to the world's first and best
 blockchain-based social media platform, RocketX.  It uses
 [STEEM](https://github.com/steemit/steem) and [SteemSmartContracts](https://github.com/harpagon210/steemsmartcontracts), a blockchain powered by DPoS Governance and ChainBase DB to store JSON-based content for a plethora of web
 applications.   
 
-## Why would I want to use Condenser (rocketx.com front-end)?
+## Why would I want to use Condenser (RocketX front-end)?
 
 * Learning how to build blockchain-based web applications using scot tokens as a
   content storage mechanism in react.js
@@ -29,7 +31,7 @@ https://get.docker.com
 To bring up a running container it's as simple as this:
 
 ```bash
-docker run -it -p 8080:8080 steemit/condenser
+docker run -it -p 8080:8080 freedomexio/rocketx-condenser
 ```
 
 Environment variables can be added like this:
