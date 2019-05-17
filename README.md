@@ -33,13 +33,13 @@ https://get.docker.com
 To bring up a running container it's as simple as this:
 
 ```bash
-docker run -it -p 8080:8080 freedomexio/rocketx-condenser
+docker run -it -p 8080:8080 steemit/condenser
 ```
 
 Environment variables can be added like this:
 
 ```bash
-docker run -it -p 8080:8080 freedomexio/rocketx-condenser
+docker run -it -p 8080:8080 steemit/condenser
 ```
 
 If you would like to modify, build, and run condenser using docker, it's as
@@ -223,7 +223,7 @@ This will read data from the blobs in `api_mockdata` directory. If you want to u
 
 ### Run blackbox tests using nightwatch
 
-To run a Selenium test suite, start the condenser docker image with a name `condenser` (like `docker run --name condenser -itp 8080:8080 freedomexio/rocketx-condenser:latest`) and then run the blackboxtest image attached to the condneser image's network:
+To run a Selenium test suite, start the condenser docker image with a name `condenser` (like `docker run --name condenser -itp 8080:8080 steemit/condenser:latest`) and then run the blackboxtest image attached to the condneser image's network:
 
 ```
 docker build -t=steemit/condenser-blackboxtest blackboxtest/
