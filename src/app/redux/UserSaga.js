@@ -466,6 +466,7 @@ function* usernamePasswordLogin2({
 
     if (!autopost && saveLogin) yield put(userActions.saveLogin());
 
+
     // Redirect user to the appropriate page after login.
     if (afterLoginRedirectToWelcome) {
         console.log('Redirecting to welcome page');

@@ -69,6 +69,7 @@ export function* fetchState(location_change_action) {
         // handle trending/hot/promoted feeds differently.
         const state = yield call(getStateAsync, url);
 
+
         yield put(globalActions.receiveState(state));
         yield call(syncPinnedPosts);
     } catch (error) {
@@ -235,6 +236,7 @@ export function* fetchData(action) {
         let batch = 0;
         while (!fetchDone) {
             let data = yield call([api, api[call_name]], ...args);
+
 
             data = yield all(
                 data
