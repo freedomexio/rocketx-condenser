@@ -1,7 +1,6 @@
 
 # RocketX-Condenser
 
-
 ![](https://i.imgur.com/MxrXqDy.png)
 
 Condenser is the react.js web interface to the world's first and best
@@ -30,19 +29,7 @@ can be set using environment variables (see configuration section below for
 more information). If you need to install docker, you can get it at
 https://get.docker.com
 
-To bring up a running container it's as simple as this:
-
-```bash
-docker run -it -p 8080:8080 steemit/condenser
-```
-
-Environment variables can be added like this:
-
-```bash
-docker run -it -p 8080:8080 steemit/condenser
-```
-
-If you would like to modify, build, and run condenser using docker, it's as
+To modify, build, and run condenser using docker, it's as
 simple as pulling in the github repo and issuing one command to build it,
 like this:
 
@@ -114,7 +101,7 @@ It will take quite a bit longer to start in this mode (~60s) as it needs to
 build and start the webpack-dev-server.
 
 By default you will be connected to steemit.com's public steem node at
-`wss://steemd.steeemit.com`. This is actually on the real blockchain and
+`https://api.steeemit.com`. This is actually on the real blockchain and
 you would use your regular account name and credentials to login - there is
 not an official separate testnet at this time. If you intend to run a
 full-fledged site relying on your own, we recommend looking into running a
@@ -138,8 +125,8 @@ stored in `config/defaults.json`.
 Environment variables using an example like this:
 
 ```bash
-export SDC_CLIENT_STEEMD_URL="wss://steemd.steemit.com"
-export SDC_SERVER_STEEMD_URL="wss://steemd.steemit.com"
+export SDC_CLIENT_STEEMD_URL="https://api.steemit.com"
+export SDC_SERVER_STEEMD_URL="https://api.steemit.com"
 ```
 
 Keep in mind environment variables only exist in your active session, so if
