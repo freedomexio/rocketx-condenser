@@ -35,7 +35,7 @@ like this:
 
 ```bash
 git clone https://github.com/freedomexio/rocketx-condenser
-cd condenser
+cd rocketx-condenser
 docker build -t="myname/condenser:mybranch" .
 docker run -it -p 8080:8080 myname/condenser:mybranch
 ```
