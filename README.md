@@ -47,7 +47,7 @@ docker run -it -p 8080:8080 myname/condenser:mybranch
 
 ```bash
 git clone https://github.com/freedomexio/rocketx-condenser
-cd condenser
+cd rocketx-condenser
 mkdir tmp
 ```
 
