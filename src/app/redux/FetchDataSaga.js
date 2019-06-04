@@ -14,7 +14,11 @@ import * as globalActions from './GlobalReducer';
 import * as appActions from './AppReducer';
 import constants from './constants';
 import { fromJS, Map, Set } from 'immutable';
-import { getStateAsync, getScotDataAsync } from 'app/utils/steemApi';
+import {
+    fetchFeedDataAsync,
+    getStateAsync,
+    getScotDataAsync,
+} from 'app/utils/steemApi';
 import { LIQUID_TOKEN_UPPERCASE, SCOT_TAG } from 'app/client_config';
 
 const REQUEST_DATA = 'fetchDataSaga/REQUEST_DATA';
@@ -42,6 +46,15 @@ export function* fetchState(location_change_action) {
         yield fork(fetchFollowCount, username);
         yield fork(loadFollows, 'getFollowersAsync', username, 'blog');
         yield fork(loadFollows, 'getFollowingAsync', username, 'blog');
+    }
+
+    if (
+        pathname === '/' ||
+        pathname === '' ||
+        pathname.indexOf('trending') !== -1 ||
+        pathname.indexOf('hot') !== -1
+    ) {
+        yield fork(getPromotedState, pathname);
     }
 
     // `ignore_fetch` case should only trigger on initial page load. No need to call
@@ -82,6 +95,28 @@ export function* fetchState(location_change_action) {
 
     yield put(appActions.fetchDataEnd());
 }
+
+/**
+ * Get promoted state for given path.
+ *
+ * @param {String} pathname
+ */
+export function* getPromotedState(pathname) {
+    const m = pathname.match(/^\/[a-z]*\/(.*)\/?/);
+    const tag = m ? m[1] : '';
+
+    const discussions = yield select(state =>
+        state.global.getIn(['discussion_idx', tag, 'promoted'])
+    );
+
+    if (discussions && discussions.size > 0) {
+        return;
+    }
+
+    const state = yield call(getStateAsync, `/promoted/${tag}`);
+    yield put(globalActions.receiveState(state));
+}
+
 /**
  * Get transfer-related usernames from history and fetch their account data.
  *
@@ -265,30 +300,17 @@ export function* fetchData(action) {
         let fetchDone = false;
         let batch = 0;
         while (!fetchDone) {
-            let data = yield call([api, api[call_name]], ...args);
+            let { feedData, endOfData, lastValue } = yield call(
+                fetchFeedDataAsync,
+                call_name,
+                ...args
+            );
 
-            // endOfData check and lastValue setting should go before any filtering,
-            // this indicates no further pages in feed.
-            endOfData = data.length < constants.FETCH_DATA_BATCH_SIZE;
-            // next arg. Note 'by_replies' does not use same structure.
-            const lastValue = data.length > 0 ? data[data.length - 1] : null;
+            // Set next arg. Note 'by_replies' does not use same structure.
             if (lastValue && order !== 'by_replies') {
                 args[0].start_author = lastValue.author;
                 args[0].start_permlink = lastValue.permlink;
             }
-
-            data = (yield all(
-                data.map(post =>
-                    call(async () => {
-                        const k = `${post.author}/${post.permlink}`;
-                        const scotData = await getScotDataAsync(`@${k}`);
-                        post.scotData = scotData;
-                        return post;
-                    })
-                )
-            )).filter(
-                post => post.scotData && post.scotData[LIQUID_TOKEN_UPPERCASE]
-            );
 
             batch++;
             fetchLimitReached = batch >= constants.MAX_BATCHES;
@@ -296,8 +318,8 @@ export function* fetchData(action) {
             // Still return all data but only count ones matching the filter.
             // Rely on UI to actually hide the posts.
             fetched += postFilter
-                ? data.filter(postFilter).length
-                : data.length;
+                ? feedData.filter(postFilter).length
+                : feedData.length;
 
             fetchDone =
                 endOfData ||
@@ -306,7 +328,7 @@ export function* fetchData(action) {
 
             yield put(
                 globalActions.receiveData({
-                    data,
+                    data: feedData,
                     order,
                     category,
                     author,
