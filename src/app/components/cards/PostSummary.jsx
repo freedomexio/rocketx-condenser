@@ -27,6 +27,8 @@ class PostSummary extends React.Component {
         pending_payout: PropTypes.string.isRequired,
         total_payout: PropTypes.string.isRequired,
         content: PropTypes.object.isRequired,
+        featured: PropTypes.bool,
+        featuredOnClose: PropTypes.func,
         thumbSize: PropTypes.string,
         nsfwPref: PropTypes.string,
         promoted: PropTypes.object,
@@ -58,7 +60,13 @@ class PostSummary extends React.Component {
 
     render() {
         const { thumbSize, ignore } = this.props;
-        const { post, promoted, content } = this.props;
+        const {
+            post,
+            promoted,
+            content,
+            featured,
+            featuredOnClose,
+        } = this.props;
         const { account } = this.props;
         if (!content) return null;
 
@@ -146,6 +154,7 @@ class PostSummary extends React.Component {
                     {isNsfw && <span className="nsfw-flag">nsfw</span>}
                     {title_text}
                 </Link>
+                {featured && <span className="PinText">Featured</span>}
             </h2>
         );
 
@@ -216,6 +225,16 @@ class PostSummary extends React.Component {
                             </span>
                         )}
                     </div>
+
+                    {featured && (
+                        <a
+                            onClick={featuredOnClose}
+                            className="PinDismiss"
+                            title="Dismiss Post"
+                        >
+                            <Icon name="close" />
+                        </a>
+                    )}
                 </div>
             </div>
         );
