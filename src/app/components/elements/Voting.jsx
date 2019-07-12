@@ -501,16 +501,24 @@ class Voting extends React.Component {
         if (showList && total_votes > 0 && active_votes) {
             const avotes = active_votes.toJS();
 
-            // Compute estimates given current order without rearrangement first
+            // Compute estimates given current order without rearrangement first,
+            // only if scot is present.
             let currRshares = 0;
-            for (let i = 0; i < avotes.length; i++) {
-                const vote = avotes[i];
-                vote.estimate = (
-                    (applyRewardsCurve(currRshares + vote.rshares) -
-                        applyRewardsCurve(currRshares)) /
-                    Math.pow(10, scotPrecision)
-                ).toFixed(scotPrecision);
-                currRshares += vote.rshares;
+            if (scotData) {
+                const rsharesTotal = avotes
+                    .map(x => x.rshares)
+                    .reduce((x, y) => x + y);
+                const claimsTotal = applyRewardsCurve(rsharesTotal);
+                for (let i = 0; i < avotes.length; i++) {
+                    const vote = avotes[i];
+                    vote.estimate = (
+                        payout *
+                        (applyRewardsCurve(currRshares + vote.rshares) -
+                            applyRewardsCurve(currRshares)) /
+                        claimsTotal
+                    ).toFixed(scotPrecision);
+                    currRshares += vote.rshares;
+                }
             }
 
             avotes.sort(
@@ -528,9 +536,10 @@ class Voting extends React.Component {
             ) {
                 const { percent, voter, estimate } = avotes[v];
                 const sign = Math.sign(percent);
+                const estimateStr = estimate ? ` (${estimate})` : '';
                 if (sign === 0) continue;
                 voters.push({
-                    value: (sign > 0 ? '+ ' : '- ') + voter + ` (${estimate})`,
+                    value: (sign > 0 ? '+ ' : '- ') + voter + estimateStr,
                     link: '/@' + voter,
                 });
             }
