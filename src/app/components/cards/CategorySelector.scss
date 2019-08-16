@@ -1,0 +1,14 @@
+.tag-multi-select,
+.multi-select,
+.dropdown {
+    width: 100% !important;
+}
+// Overwrite MultiSelect textbox styles with default styles. TODO: Add onfocus styles
+.dropdown-heading {
+    border-color: rgb(217, 217, 217) rgb(204, 204, 204) rgb(179, 179, 179) !important;
+}
+// TODO: Overwrite MultiSelect triangle button color with color specifiied in client_config
+
+.item-renderer input {
+    vertical-align: middle;
+}
