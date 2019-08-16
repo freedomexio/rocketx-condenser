@@ -4,9 +4,16 @@ import { connect } from 'react-redux';
 import shouldComponentUpdate from 'app/utils/shouldComponentUpdate';
 import { cleanReduxInput } from 'app/utils/ReduxForms';
 import tt from 'counterpart';
-import { APP_MAX_TAG } from 'app/client_config';
+import { APP_MAX_TAG, TAG_LIST, SCOT_TAG } from 'app/client_config';
+import MultiSelect from '@khanacademy/react-multi-select';
 
 const MAX_TAG = APP_MAX_TAG || 10;
+
+const options = [];
+
+TAG_LIST._tail.array.forEach((t, i) => {
+    options.push({ label: t, value: i });
+});
 
 class CategorySelector extends React.Component {
     static propTypes = {
@@ -31,71 +38,63 @@ class CategorySelector extends React.Component {
     };
     constructor() {
         super();
-        this.state = { createCategory: true };
+        this.state = {
+            selected: [],
+            primaryTag: SCOT_TAG,
+        };
         this.shouldComponentUpdate = shouldComponentUpdate(
             this,
             'CategorySelector'
         );
-        this.categoryCreateToggle = e => {
-            e.preventDefault();
-            this.props.onChange();
-            this.setState({ createCategory: !this.state.createCategory });
-            setTimeout(() => this.refs.categoryRef.focus(), 300);
-        };
-        this.categorySelectOnChange = e => {
-            e.preventDefault();
-            const { value } = e.target;
-            const { onBlur } = this.props; // call onBlur to trigger validation immediately
-            if (value === 'new') {
-                this.setState({ createCategory: true });
-                setTimeout(() => {
-                    if (onBlur) onBlur();
-                    this.refs.categoryRef.focus();
-                }, 300);
-            } else this.props.onChange(e);
-        };
+    }
+    componentDidMount() {
+        // When editing a post, set first tag (always) and any following tags in tag picker, but only if they are valid categories
+        const selected = [];
+        const proptags = this.props.value.split(' ');
+        if (proptags.length > 0) this.setState({ primaryTag: proptags[0] });
+        proptags.forEach(t => {
+            options.forEach(o => {
+                if (o.label === t) selected.push(o.value);
+            });
+        });
+        this.setState({ selected });
+        this.handleTagChange(selected);
+    }
+    handleTagChange(selected) {
+        this.setState({ selected });
+        let sel = this.state.primaryTag;
+        selected.forEach(i => {
+            sel += ` ${options[i].label}`;
+        });
+        this.props.onChange(sel);
     }
     render() {
-        const { trending, tabIndex, disabled } = this.props;
-        const categories = trending
-            .slice(0, 11)
-            .filterNot(c => validateCategory(c));
-        const { createCategory } = this.state;
+        console.log(this.props.value);
+        const { selected } = this.state;
 
-        const categoryOptions = categories.map((c, idx) => (
-            <option value={c} key={idx}>
-                {c}
-            </option>
-        ));
-
-        const impProps = { ...this.props };
-        const categoryInput = (
-            <input
-                type="text"
-                {...cleanReduxInput(impProps)}
-                ref="categoryRef"
-                tabIndex={tabIndex}
-                disabled={disabled}
-                autoCapitalize="none"
-            />
+        const tagMultiSelect = (
+            <div className="tag-multi-select">
+                {
+                    // The first tag (defaults to SCOT_TAG or the catgeory of the edited post is not shown in the tag picker since it cannot be changed)
+                }
+                <MultiSelect
+                    hasSelectAll={false}
+                    options={options}
+                    selected={selected}
+                    onSelectedChanged={selected =>
+                        this.handleTagChange(selected)
+                    }
+                    overrideStrings={{
+                        // TODO: Overwrite default strings with tt for multilingual support
+                        selectSomeItems: `${tt(
+                            'category_selector_jsx.select_a_tag'
+                        )}...`,
+                    }}
+                />
+            </div>
         );
 
-        const categorySelect = (
-            <select
-                {...cleanReduxInput(this.props)}
-                onChange={this.categorySelectOnChange}
-                ref="categoryRef"
-                tabIndex={tabIndex}
-                disabled={disabled}
-            >
-                <option value="">
-                    {tt('category_selector_jsx.select_a_tag')}...
-                </option>
-                {categoryOptions}
-                <option value="new">{this.props.placeholder}</option>
-            </select>
-        );
-        return <span>{createCategory ? categoryInput : categorySelect}</span>;
+        return <span>{tagMultiSelect}</span>;
     }
 }
 export function validateCategory(category, required = true) {

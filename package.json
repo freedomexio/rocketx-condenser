@@ -23,6 +23,7 @@
   "author": "Steemit, Inc.",
   "license": "MIT",
   "dependencies": {
+    "@khanacademy/react-multi-select": "^0.3.3",
     "@steem/crypto-session": "git+https://github.com/steemit/crypto-session.git#83a90b319ce5bc6a70362d52a15a815de7e729bb",
     "@steemit/steem-js": "0.7.5",
     "assert": "1.4.1",
