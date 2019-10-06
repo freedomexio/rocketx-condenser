@@ -40,6 +40,18 @@ export async function getScotAccountDataAsync(account) {
     return getScotDataAsync(`@${account}`, { v: new Date().getTime() });
 }
 
+async function getAccount(account) {
+    const accounts = await api.getAccountsAsync([account]);
+    console.log(accounts);
+    return accounts && accounts.length > 0 ? accounts[0] : {};
+}
+
+async function getGlobalProps() {
+    const gprops = await api.getDynamicGlobalPropertiesAsync();
+    console.log(gprops);
+    return gprops;
+}
+
 async function getAuthorRep(feedData) {
     const authors = feedData.map(d => d.author);
     const authorRep = {};
@@ -50,6 +62,8 @@ async function getAuthorRep(feedData) {
 }
 
 function mergeContent(content, scotData) {
+    const parentAuthor = content.parent_author;
+    const parentPermlink = content.parent_permlink;
     const voted = content.active_votes;
     const lastUpdate = content.last_update;
     const title = content.title;
@@ -73,6 +87,10 @@ function mergeContent(content, scotData) {
     if (title) {
         content.title = title;
     }
+    // Prefer parent author / permlink of content
+    content.parent_author = parentAuthor;
+    content.parent_permlink = parentPermlink;
+
     content.scotData = {};
     content.scotData[LIQUID_TOKEN_UPPERCASE] = scotData;
 }
@@ -177,6 +195,16 @@ export async function attachScotData(url, state) {
             }),
             fetchSnaxBalanceAsync(account),
         ]);
+
+        if (!state.accounts) {
+            state.accounts = {};
+        }
+        if (!state.accounts[account]) {
+            state.accounts[account] = await getAccount(account);
+        }
+        if (!state.props) {
+            state.props = await getGlobalProps();
+        }
         if (tokenBalances) {
             state.accounts[account].token_balances = tokenBalances;
         }
@@ -241,8 +269,9 @@ export async function attachScotData(url, state) {
         Object.entries(state.content)
             .filter(
                 entry =>
-                    entry[1].scotData &&
-                    entry[1].scotData[LIQUID_TOKEN_UPPERCASE]
+                    (entry[1].scotData &&
+                        entry[1].scotData[LIQUID_TOKEN_UPPERCASE]) ||
+                    (entry[1].parent_author && entry[1].parent_permlink)
             )
             .forEach(entry => {
                 filteredContent[entry[0]] = entry[1];
@@ -266,12 +295,21 @@ export async function getStateAsync(url) {
     const steemitApiStateNeeded = !url.match(
         /^[\/]?(trending|hot|created|promoted)($|\/$|\/([^\/]+)\/?$)/
     );
-    const raw = steemitApiStateNeeded
+    let raw = steemitApiStateNeeded
         ? await api.getStateAsync(path)
         : {
               accounts: {},
               content: {},
           };
+    if (!raw) {
+        raw = {};
+    }
+    if (!raw.accounts) {
+        raw.accounts = {};
+    }
+    if (!raw.content) {
+        raw.content = {};
+    }
     await attachScotData(url, raw);
 
     const cleansed = stateCleaner(raw);

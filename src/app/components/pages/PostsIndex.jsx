@@ -17,6 +17,7 @@ import SidebarNewUsers from 'app/components/elements/SidebarNewUsers';
 import Notices from 'app/components/elements/Notices';
 import { GptUtils } from 'app/utils/GptUtils';
 import GptAd from 'app/components/elements/GptAd';
+import ReviveAd from 'app/components/elements/ReviveAd';
 import ArticleLayoutSelector from 'app/components/modules/ArticleLayoutSelector';
 import Topics from './Topics';
 import SortOrder from 'app/components/elements/SortOrder';
@@ -299,6 +300,10 @@ class PostsIndex extends React.Component {
         const layoutClass = this.props.blogmode
             ? ' layout-block'
             : ' layout-list';
+
+        const mqLarge =
+            process.env.BROWSER &&
+            window.matchMedia('screen and (min-width: 75em)').matches;
         return (
             <div
                 className={
@@ -368,6 +373,11 @@ class PostsIndex extends React.Component {
                             <GptAd type="Freestar" id="steemit_160x600_Right" />
                         </div>
                     ) : null}
+                    {this.props.reviveEnabled && mqLarge ? (
+                        <div className="sidebar-ad">
+                            <ReviveAd adKey="sidebar_right" />
+                        </div>
+                    ) : null}
                 </aside>
 
                 <aside className="c-sidebar c-sidebar--left">
@@ -409,6 +419,11 @@ class PostsIndex extends React.Component {
                             </div>
                         </div>
                     ) : null}
+                    {this.props.reviveEnabled && mqLarge ? (
+                        <div className="sidebar-ad">
+                            <ReviveAd adKey="sidebar_left" />
+                        </div>
+                    ) : null}
                 </aside>
             </div>
         );
@@ -439,6 +454,7 @@ module.exports = {
                     .get('notices')
                     .toJS(),
                 gptEnabled: state.app.getIn(['googleAds', 'gptEnabled']),
+                reviveEnabled: state.app.get('reviveEnabled'),
             };
         },
         dispatch => {
