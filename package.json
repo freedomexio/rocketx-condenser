@@ -145,7 +145,7 @@
     "webpack-isomorphic-tools": "3.0.5",
     "websocket": "1.0.24",
     "whatwg-fetch": "0.11.1",
-    "xmldom": "0.1.27"
+    "xmldom": "0.6.0"
   },
   "devDependencies": {
     "@storybook/addon-knobs": "3.2.19",
